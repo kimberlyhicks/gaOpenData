@@ -32,7 +32,7 @@ shinyUI(fluidPage(
      
      selectizeInput("source" ,
                     label = h3("Network location"),
-                    choices = unique(data[ , 'networkLocation']) , multiple = T ,
+                    choices = unique(data$networkLocation) , multiple = T ,
                     options = list(
                       placeholder = 'Select source below')) ,
      checkboxGroupInput("sourceGroup" ,
@@ -121,7 +121,7 @@ shinyUI(fluidPage(
         )       
       ) ,
       
-      tabPanel('Refferal-Landing-Exit' ,
+      tabPanel('Referral-Landing-Exit' ,
         fluidRow(
           hr(),
           column(2 ,

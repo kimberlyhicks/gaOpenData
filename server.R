@@ -119,7 +119,7 @@ shinyServer(function(input, output ,session) {
     
     datasetInput <- dataINPUT.E()
     
-    totalEngage <- sum(datasetInput[,'userCount'])
+    totalEngage <- sum(datasetInput$userCount)
     
     sumEngage <- summarise(group_by(datasetInput, eventCategory) ,
                             userSum = sum(userCount) ,
@@ -176,7 +176,7 @@ shinyServer(function(input, output ,session) {
     
     datasetInput <- dataINPUT.E()
     
-    totalEngage <- sum(datasetInput[,'userCount'])
+    totalEngage <- sum(datasetInput$userCount)
     
     sumEngage <- summarise(group_by(datasetInput, groupNetwork) ,
                            userSum = sum(userCount) ,
@@ -234,7 +234,7 @@ shinyServer(function(input, output ,session) {
     
     datasetInput <- dataINPUT.E()
     
-    totalEngage <- sum(datasetInput[,'userCount'])
+    totalEngage <- sum(datasetInput$userCount)
     
     sumEngage <- summarise(group_by(datasetInput, deviceCategory) ,
                            userSum = sum(userCount) ,
@@ -273,6 +273,21 @@ shinyServer(function(input, output ,session) {
       pad = 4
     )
     
+    # Table of engagement detail
+    output$table <- 
+      
+      renderDataTable({
+        datasetInput <- dataINPUT.E()
+        sumRef <- summarise(group_by (datasetInput , eventCategory , eventAction , eventLabel) ,
+                            userCount = sum(userCount))
+        rankRef <- frank(sumRef , 'userCount' , ties.method = 'min')
+        matchTopRef <- max( 0 , max(rankRef) - 10):max(rankRef)
+        topRef <- sumRef[which(rankRef %in% matchTopRef) , ]
+        topRefOrder <- topRef[order(topRef$userCount , decreasing = TRUE) , ]
+        topRefOrder
+      }, options = list(lengthMenu = c(10, 20, 50), pageLength = 10))
+    
+    
     # Generate bar graph
     plot_ly(data = topEngageOrder , y = ~deviceCategory, x = ~userSum , type = 'bar' , orientation = 'h' , color=I('#d95f0e') , opacity = .75) %>%
       layout(yaxis = ax, xaxis = list(title = 'Unique Daily Users'), margin = mm) %>%
@@ -297,27 +312,27 @@ shinyServer(function(input, output ,session) {
   }) 
   output$text2 <- renderText({
     datasetInput <- dataINPUT()
-    avgSessionsPerDay = round(sum(datasetInput[ , 'sessions']) / length(unique(datasetInput[ , 'date'])) , digits = 0)
+    avgSessionsPerDay = round(sum(datasetInput$sessions) / length(unique(datasetInput$date)) , digits = 0)
     paste(avgSessionsPerDay)
   }) 
   output$text3 <- renderText({
     datasetInput <- dataINPUT()
-    avgUsersPerDay = round(sum(datasetInput[ , 'userCount']) / length(unique(datasetInput[ , 'date'])) , digits = 0)
+    avgUsersPerDay = round(sum(datasetInput$userCount) / length(unique(datasetInput$date)) , digits = 0)
     paste(avgUsersPerDay)
   }) 
   output$text4 <- renderText({
     datasetInput <- dataINPUT()
-    pctNew = round(sum(subset(datasetInput,userType == 'New Visitor')[ , 'userCount']) / sum(datasetInput[ , 'userCount']) , digits = 3) * 100
+    pctNew = round(sum(subset(datasetInput,userType == 'New Visitor')$userCount) / sum(datasetInput$userCount) , digits = 3) * 100
     paste(pctNew , '%' , sep = '')
   }) 
   output$text5 <- renderText({
     datasetInput <- dataINPUT()
-    avgTimePerSession = round(sum(datasetInput[ , 'sessionDuration']) / sum(datasetInput[ , 'sessions']) / 60 , digits = 1)
+    avgTimePerSession = round(sum(datasetInput$sessionDuration) / sum(datasetInput$sessions) / 60 , digits = 1)
     paste(avgTimePerSession)
   }) 
   output$text6 <- renderText({
     datasetInput <- dataINPUT()
-    pctMobile = sum(subset(datasetInput , deviceCategory == 'mobile')[,'userCount']) / sum(datasetInput[,'userCount'])
+    pctMobile = sum(subset(datasetInput , deviceCategory == 'mobile')$userCount) / sum(datasetInput$userCount)
     pctMobileFmt = paste(round(pctMobile , 3) * 100 , "%" , sep="")
    paste(pctMobileFmt)
  }) 
@@ -330,27 +345,27 @@ shinyServer(function(input, output ,session) {
   }) 
   output$text8 <- renderText({
     datasetInput <- dataINPUT()
-    avgSessionsPerDay = round(sum(datasetInput[ , 'sessions']) / length(unique(datasetInput[ , 'date'])) , digits = 0)
+    avgSessionsPerDay = round(sum(datasetInput$sessions) / length(unique(datasetInput$date)) , digits = 0)
     paste(avgSessionsPerDay)
   }) 
   output$text9 <- renderText({
     datasetInput <- dataINPUT()
-    avgUsersPerDay = round(sum(datasetInput[ , 'userCount']) / length(unique(datasetInput[ , 'date'])) , digits = 0)
+    avgUsersPerDay = round(sum(datasetInput$userCount) / length(unique(datasetInput$date)) , digits = 0)
     paste(avgUsersPerDay)
   }) 
   output$text10 <- renderText({
     datasetInput <- dataINPUT()
-    pctNew = round(sum(subset(datasetInput,userType == 'New Visitor')[ , 'userCount']) / sum(datasetInput[ , 'userCount']) , digits = 3) * 100
+    pctNew = round(sum(subset(datasetInput,userType == 'New Visitor')$userCount) / sum(datasetInput$userCount) , digits = 3) * 100
     paste(pctNew , '%' , sep = '')
   }) 
   output$text11 <- renderText({
      datasetInput <- dataINPUT()
-    avgTimePerSession = round(sum(datasetInput[ , 'sessionDuration']) / sum(datasetInput[ , 'sessions']) / 60 , digits = 1)
+    avgTimePerSession = round(sum(datasetInput$sessionDuration) / sum(datasetInput$sessions) / 60 , digits = 1)
     paste(avgTimePerSession)
   }) 
   output$text12 <- renderText({
     datasetInput <- dataINPUT()
-    pctMobile = sum(subset(datasetInput , deviceCategory == 'mobile')[,'userCount']) / sum(datasetInput[,'userCount'])
+    pctMobile = sum(subset(datasetInput , deviceCategory == 'mobile')$userCount) / sum(datasetInput$userCount)
     pctMobileFmt = paste(round(pctMobile , 3) * 100 , "%" , sep="")
     paste(pctMobileFmt)
   }) 
@@ -423,7 +438,7 @@ shinyServer(function(input, output ,session) {
     
     datasetInput <- dataINPUT()
   
-    totalSources <- sum(datasetInput[,'userCount'])
+    totalSources <- sum(datasetInput$userCount)
     
     sumSources <- summarise(group_by(datasetInput, groupNetwork) ,
                          userSum = sum(userCount) ,
@@ -575,8 +590,8 @@ shinyServer(function(input, output ,session) {
   
     datasetInput <- dataINPUT.H()
     
-    session_new0 <- subset(datasetInput, userType == 'New Visitor')[ , 'sessionDuration'] / 60
-    session_rtn0 <- subset(datasetInput, userType == 'Returning Visitor')[ , 'sessionDuration'] / 60
+    session_new0 <- subset(datasetInput, userType == 'New Visitor')$sessionDuration / 60
+    session_rtn0 <- subset(datasetInput, userType == 'Returning Visitor')$sessionDuration / 60
    
   # cutoff at 98%  
     cutoff <- quantile(c(session_new0 , session_rtn0) , .98)

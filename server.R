@@ -3,17 +3,6 @@
 
 shinyServer(function(input, output ,session) {
 
-  # Reformat date on each data set.  
-  data <- mutate(data.master,
-                 useDate = ymd(date) 
-                 )
-  data.E <- mutate(data.master.E,
-                 useDate = ymd(date) 
-                 )
-  data.P <- mutate(data.master.P,
-                   useDate = ymd(date) 
-                   )
-  
   # Ensure data is reactive to widgets.
   dataINPUT <- reactive({
     
@@ -29,7 +18,7 @@ shinyServer(function(input, output ,session) {
     }  else{
       
           datasetInput <-  subset(data,
-                                    city == input$city &
+                                   # city == input$city &
                                     deviceCategory %in% c(input$device) &
                                     groupNetwork %in% c(input$sourceGroup) &
                                     source == input$source &
@@ -55,7 +44,7 @@ shinyServer(function(input, output ,session) {
     }  else{
       
       datasetInput <-  subset(data,
-                                city == input$city &
+                              #  city == input$city &
                                 deviceCategory %in% c(input$device) &
                                 groupNetwork %in% c(input$sourceGroup) &
                                 source == input$source &
@@ -79,7 +68,7 @@ shinyServer(function(input, output ,session) {
                                 useDate <= input$dates[2])
     }  else{
       datasetInput <-  subset(data.E,
-                                city == input$city &
+                               # city == input$city &
                                 deviceCategory %in% c(input$device) &
                                 groupNetwork %in% c(input$sourceGroup) &
                                 source == input$source &
@@ -103,7 +92,7 @@ shinyServer(function(input, output ,session) {
                                 useDate <= input$dates[2])
     }  else{
       datasetInput <-  subset(data.P,
-                                city == input$city &
+                             #   city == input$city &
                                 deviceCategory %in% c(input$device) &
                                 groupNetwork %in% c(input$sourceGroup) &
                                 source == input$source &
@@ -127,7 +116,7 @@ shinyServer(function(input, output ,session) {
     )
     
     # Rank event categories and reorder
-    rankEngage <- frank(sumEngage , 'userSum' , ties.method = 'min')
+    rankEngage <- frank(sumEngage , 'userSum' , ties.method = 'first')
     matchTopEngage <- max( 0 , max(rankEngage) - 10):max(rankEngage)
     topEngage <- sumEngage[which(rankEngage %in% matchTopEngage) , ]
     topEngageOrder <- topEngage[order(topEngage$userSum , decreasing = FALSE) , ]
@@ -160,7 +149,7 @@ shinyServer(function(input, output ,session) {
     
     # Generate bar graph
     plot_ly(data = topEngageOrder , y = ~eventCategory, x = ~userSum , type = 'bar' , orientation = 'h' , color=I('#d95f0e') , opacity = .75) %>%
-      layout(yaxis = ax, xaxis = list(title = 'Unique Daily Users'), margin = mm) %>%
+      layout(yaxis = ax, xaxis = list(title = 'Sum Engagement Events'), margin = mm) %>%
       add_annotations(text = text,
                       x = x,
                       y = y,
@@ -174,7 +163,7 @@ shinyServer(function(input, output ,session) {
   # Bar graph for top network groups for engaged panel.
   output$barNetwork <- renderPlotly({
     
-    datasetInput <- dataINPUT.E()
+    datasetInput <- dataINPUT()
     
     totalEngage <- sum(datasetInput$userCount)
     
@@ -184,10 +173,10 @@ shinyServer(function(input, output ,session) {
     )
     
     # Rank group networks and reorder
-    rankEngage <- frank(sumEngage , 'userSum' , ties.method = 'min')
-    matchTopEngage <- max( 0 , max(rankEngage) - 10):max(rankEngage)
-    topEngage <- sumEngage[which(rankEngage %in% matchTopEngage) , ]
-    topEngageOrder <- topEngage[order(topEngage$userSum , decreasing = FALSE) , ]
+  #  rankEngage <- frank(sumEngage , 'userSum' , ties.method = 'first')
+  #  matchTopEngage <- max( 0 , max(rankEngage) - 10):max(rankEngage)
+  #  topEngage <- sumEngage[which(rankEngage %in% matchTopEngage) , ]
+    topEngageOrder <- sumEngage[order(sumEngage$userSum , decreasing = FALSE) , ]
     
     # Text to add to graph and where to add it
     y <- topEngageOrder$groupNetwork
@@ -232,7 +221,7 @@ shinyServer(function(input, output ,session) {
   # Bar plot for device category for engaged data set.
   output$barDevice <- renderPlotly({
     
-    datasetInput <- dataINPUT.E()
+    datasetInput <- dataINPUT()
     
     totalEngage <- sum(datasetInput$userCount)
     
@@ -242,7 +231,7 @@ shinyServer(function(input, output ,session) {
     )
     
     # Rank by device category and reorder
-    rankEngage <- frank(sumEngage , 'userSum' , ties.method = 'min')
+    rankEngage <- frank(sumEngage , 'userSum' , ties.method = 'first')
     matchTopEngage <- max( 0 , max(rankEngage) - 10):max(rankEngage)
     topEngage <- sumEngage[which(rankEngage %in% matchTopEngage) , ]
     topEngageOrder <- topEngage[order(topEngage$userSum , decreasing = FALSE) , ]
@@ -280,10 +269,10 @@ shinyServer(function(input, output ,session) {
         datasetInput <- dataINPUT.E()
         sumRef <- summarise(group_by (datasetInput , eventCategory , eventAction , eventLabel) ,
                             userCount = sum(userCount))
-        rankRef <- frank(sumRef , 'userCount' , ties.method = 'min')
-        matchTopRef <- max( 0 , max(rankRef) - 10):max(rankRef)
-        topRef <- sumRef[which(rankRef %in% matchTopRef) , ]
-        topRefOrder <- topRef[order(topRef$userCount , decreasing = TRUE) , ]
+        #rankRef <- frank(sumRef , 'userCount' , ties.method = 'first')
+        #matchTopRef <- max( 0 , max(rankRef) - 10):max(rankRef)
+        #topRef <- sumRef[which(rankRef %in% matchTopRef) , ]
+        topRefOrder <- sumRef[order(sumRef$userCount , decreasing = TRUE) , ]
         topRefOrder
       }, options = list(lengthMenu = c(10, 20, 50), pageLength = 10))
     
@@ -446,7 +435,7 @@ shinyServer(function(input, output ,session) {
                          )
     
     # Rank group networks and reorder
-    rankSources <- frank(sumSources , 'userSum' , ties.method = 'min')
+    rankSources <- frank(sumSources , 'userSum' , ties.method = 'first')
     matchTopSources <- max( 0 , max(rankSources) - 10):max(rankSources)
     topSources <- sumSources[which(rankSources %in% matchTopSources) , ]
     topSourcesOrder <- topSources[order(topSources$userSum , decreasing = FALSE) , ]
@@ -497,7 +486,7 @@ shinyServer(function(input, output ,session) {
         datasetInput <- dataINPUT()
         sumRef <- summarise(group_by (datasetInput , networkLocation) ,
                           userCount = sum(userCount))
-        rankRef <- frank(sumRef , 'userCount' , ties.method = 'min')
+        rankRef <- frank(sumRef , 'userCount' , ties.method = 'first')
         matchTopRef <- max( 0 , max(rankRef) - 10):max(rankRef)
         topRef <- sumRef[which(rankRef %in% matchTopRef) , ]
         topRefOrder <- topRef[order(topRef$userCount , decreasing = TRUE) , ]
@@ -626,7 +615,7 @@ shinyServer(function(input, output ,session) {
       datasetInput <- dataINPUT.P()
       sumRef <- summarise(group_by (datasetInput , fullReferrer) ,
                                       userCount = sum(userCount))
-      rankRef <- frank(sumRef , 'userCount' , ties.method = 'min')
+      rankRef <- frank(sumRef , 'userCount' , ties.method = 'first')
       matchTopRef <- max( 0 , max(rankRef) - 10):max(rankRef)
       topRef <- sumRef[which(rankRef %in% matchTopRef) , ]
       topRefOrder <- topRef[order(topRef$userCount , decreasing = TRUE) , ]
@@ -640,7 +629,7 @@ shinyServer(function(input, output ,session) {
       datasetInput <- dataINPUT.P()
       sumLand <- summarise(group_by (datasetInput , landingPagePath) ,
                           userCount = sum(userCount))
-      rankLand <- frank(sumLand , 'userCount' , ties.method = 'min')
+      rankLand <- frank(sumLand , 'userCount' , ties.method = 'first')
       matchTopLand <- max( 0 , max(rankLand) - 10):max(rankLand)
       topLand <- sumLand[which(rankLand %in% matchTopLand) , ]
       topLandOrder <- topLand[order(topLand$userCount , decreasing = TRUE) , ]
@@ -654,7 +643,7 @@ shinyServer(function(input, output ,session) {
       datasetInput <- dataINPUT.P()
       sumExit <- summarise(group_by (datasetInput , exitPagePath) ,
                            userCount = sum(userCount))
-      rankExit <- frank(sumExit , 'userCount' , ties.method = 'min')
+      rankExit <- frank(sumExit , 'userCount' , ties.method = 'first')
       matchTopExit <- max( 0 , max(rankExit) - 10):max(rankExit)
       topExit <- sumExit[which(rankExit %in% matchTopExit) , ]
       topExitOrder <- topExit[order(topExit$userCount , decreasing = TRUE) , ]

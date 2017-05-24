@@ -16,12 +16,26 @@ library(DT)
 data <- mutate(data.master,
                useDate = ymd(date) 
 )
+names(data) <- c("rownames", "date" , "networkLocation" , "deviceCategory" , "cityId" , "users" , "newUsers" ,  
+                 "sessions" , "sessionDuration" , "goal1completions" , "goal2completions" , "Bounces" , 
+                 "userType" , "userCount" , "userGroup" , "source" , "SF" , "Bay" , "CA" , "US" , "NotUS" ,           
+                 "NoCity" , "LocationAll" , "groupNetwork" , "useDate")
+
 data.E <- mutate(data.master.E,
                  useDate = ymd(date) 
 )
+names(data.E) <- c("rownames", "date" , "networkLocation" , "deviceCategory" , "cityId" , "eventCategory" , 
+                   "eventAction" , "eventLabel" , "users" , "newUsers" ,  "sessions" , 
+                   "sessionDuration" , "userType" , "userCount" , "userGroup" , "source" , 
+                   "SF" , "Bay" , "CA" , "US" , "NotUS" , "NoCity" , "LocationAll" , "groupNetwork"  , "useDate")
 data.P <- mutate(data.master.P,
                  useDate = ymd(date) 
 )
+names(data.P) <- c("rownames", "date" , "networkLocation" , "deviceCategory" , "cityId" , "fullReferrer" , 
+                   "landingPagePath" , "exitPagePath" , "users" , "newUsers" ,  "sessions" , 
+                   "sessionDuration" , "goal1completions" , "goal2completions" , "Bounces" , "userType" , 
+                   "userCount" , "userGroup" , "source" , "SF" , "Bay" , "CA" , "US" , 
+                   "NotUS" , "NoCity" , "LocationAll" , "groupNetwork"  , "useDate")
 
 
 #require("RPostgreSQL")

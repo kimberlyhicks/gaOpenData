@@ -10,7 +10,8 @@ source('C:/Users/khicks/Documents/GAshinyApp/gaOpenData/data/networkGroup.R')
 source('C:/Users/khicks/Documents/GAshinyApp/token_file.R')
 
 yesterday <- as.character(today() - days(1))
-start_date <- as.character(today() - days(2))
+start_date <- as.character(today() - days(4))
+
 
 ValidateToken(token)
 
@@ -533,28 +534,28 @@ pw <- {
 
 drv <- dbDriver('PostgreSQL')
 
-con <- dbConnect(drv , dbname = 'shiny' , 
-                 host = '162.243.137.94' , port = 5432 ,
-                 user = 'shiny' , password = pw)
-
-dbListTables(con)
+# get database info
+source('C:/Users/khicks/Documents/GAshinyApp/dbcon.R')
 
 formatStartDate <- strftime(as.Date(start_date) , format = "%Y%m%d")
 formatYesterday <- strftime(as.Date(yesterday) , format = "%Y%m%d")
+format2YrsAgo <- strftime(as.Date(yesterday) - days(365*2) , format = "%Y%m%d")
 
-
-# Remove recent last 2 days from DB
-deleteSyntax <- paste("DELETE FROM data_master WHERE date IN ('" , formatStartDate , "' ,'" , formatYesterday , "')" , sep ='')
+# Remove recent last 2 days from DB + data > 2 years old
+deleteSyntax <- paste("DELETE FROM data_master WHERE date >= '" , formatStartDate , "'" , 
+                          "OR date <= '" , format2YrsAgo , "'" , sep ='')
 
 dbExecute(con,
           paste(deleteSyntax))
 
-deleteSyntax.E <- paste("DELETE FROM data_master_E WHERE date IN ('" , formatStartDate , "' ,'" , formatYesterday , "')" , sep ='')
+deleteSyntax.E <- paste("DELETE FROM data_master_E WHERE date >= '" , formatStartDate , "'" , 
+                        "OR date <= '" , format2YrsAgo , "'" , sep ='')
 
 dbExecute(con,
           paste(deleteSyntax.E))
 
-deleteSyntax.P <- paste("DELETE FROM data_master_P WHERE date IN ('" , formatStartDate , "' ,'" , formatYesterday , "')" , sep ='')
+deleteSyntax.P <- paste("DELETE FROM data_master_P WHERE date >= '" , formatStartDate , "'" , 
+                        "OR date <= '" , format2YrsAgo , "'" , sep ='')
 
 dbExecute(con,
           paste(deleteSyntax.P))
